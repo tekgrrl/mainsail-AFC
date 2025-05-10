@@ -1,0 +1,37 @@
+name: Build Custom Mainsail
+
+on:
+  push:
+    branches:
+      - develop # Or whatever your primary development branch is
+  workflow_dispatch: # Allows manual triggering from the Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Use the latest stable Ubuntu runner
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Checks out your repository's code
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify Node.js version (Mainsail docs recommend 20+)
+          cache: 'npm' # Caches npm dependencies for faster builds
+
+      - name: Install Dependencies
+        run: npm ci # 'ci' is generally preferred for CI for reproducibility
+
+      - name: Build Mainsail
+        run: npm run build # This is the standard command to build Mainsail
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-mainsail-build # Name of the artifact you will download
+          path: dist/ # Path to the directory created by 'npm run build'
+                     # Ensure this 'dist/' path matches what your build produces.
+                     # For Mainsail, it's typically 'dist/'.
+          if-no-files-found: error # Fails the workflow if the build directory isn't found
+          retention-days: 7 # Optional: How long to keep the artifact (default is 90)
